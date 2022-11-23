@@ -1,24 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import Auth from "./components/auth"
+import Upload from "./components/upload"
+import DisplayImages from "./components/display-images"
+import React from "react";
+
+export const User = React.createContext({})
 
 function App() {
+    const [ user ,setUser] = React.useState({
+        uid:"",
+        displayName:"",
+        email:""
+    });
+
   return (
+    <User.Provider value={{ user ,setUser }}>
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+     
+      { user.uid === "" ? <Auth /> : <Upload /> }
+
+      {user.uid !== "" && <DisplayImages /> }
     </div>
+    </User.Provider>
   );
 }
 
