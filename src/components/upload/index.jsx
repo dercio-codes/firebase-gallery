@@ -54,48 +54,97 @@ function Upload() {
     }, [file])
 
 
-    const handleFileUpload =  async() => {
-       // if(user.email === "12derciomaduna@gmail.com"){
-         if (!file) {
-            alert("Please upload an image first!");
+    const handleFileUpload = async () => {
+        const fileName = file.name
+        const idxDot = fileName.lastIndexOf(".") + 1;
+        const extFile = fileName.substr(idxDot, fileName.length).toLowerCase();
+    
+        if (!file) {
+          alert("Please upload an image first!");
         }
- 
-        const storageRef = ref(storage, `/products/${file.name}`);
- 
-        // progress can be paused and resumed. It also exposes progress updates.
-        // Receives the storage reference and the file to upload.
-        const uploadTask = uploadBytesResumable(storageRef, file);
- 
-        uploadTask.on(
+    
+        if (extFile == "jpg" || extFile == "jpeg" || extFile == "png" || extFile == "gif") {
+          const storageRef = ref(storage, `/products/${file.name}`);
+    
+          // progress can be paused and resumed. It also exposes progress updates.
+          // Receives the storage reference and the file to upload.
+          const uploadTask = uploadBytesResumable(storageRef, file);
+    
+          uploadTask.on(
             "state_changed",
             (snapshot) => {
-                const percent = Math.round(
-                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                );
- 
-                // update progress
-                setPercent(percent);
+              const percent = Math.round(
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+              );
+    
+              // update progress
+              setPercent(percent);
             },
             (err) => console.log(err),
             () => {
-                // download url
-                getDownloadURL(uploadTask.snapshot.ref).then( async (url) => {
-                    console.log(url);
-                    try {
-                       await setDoc(doc(db, "images", `${new Date().getTime()} `), {
-                                ...newImageItem,
-                                imageSource:url,
-                        });
-                       	history.push("/all-images")
-                    } catch (err) {
-                      console.error(err);
-                      alert(err.message);
-                    }
-
-                });
+              // download url
+              getDownloadURL(uploadTask.snapshot.ref).then(async (url) => {
+                console.log(url);
+                try {
+                  await setDoc(doc(db, "images", `${new Date().getTime()} `), {
+                    ...newImageItem,
+                    imageSource: url,
+                  });
+                  history.push("/all-images");
+                } catch (err) {
+                  console.error(err);
+                  alert(err.message);
+                }
+              });
             }
-        );
-    };
+          );
+        } else {
+          alert("Only jpg/jpeg and png files are allowed!");
+        }
+      };
+
+    // const handleFileUpload =  async() => {
+
+    //      if (!file) {
+    //         alert("Please upload an image first!");
+    //     }
+ 
+    //     const storageRef = ref(storage, `/products/${file.name}`);
+ 
+    //     // progress can be paused and resumed. It also exposes progress updates.
+    //     // Receives the storage reference and the file to upload.
+    //     const uploadTask = uploadBytesResumable(storageRef, file);
+ 
+    //     uploadTask.on(
+    //         "state_changed",
+    //         (snapshot) => {
+    //             const percent = Math.round(
+    //                 (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+    //             );
+ 
+    //             // update progress
+    //             setPercent(percent);
+    //         },
+    //         (err) => console.log(err),
+    //         () => {
+    //             // download url
+    //             getDownloadURL(uploadTask.snapshot.ref).then( async (url) => {
+    //                 console.log(url);
+    //                 try {
+    //                    await setDoc(doc(db, "images", `${new Date().getTime()} `), {
+    //                             ...newImageItem,
+    //                             imageSource:url,
+    //                     });
+    //                    	history.push("/all-images")
+    //                 } catch (err) {
+    //                   console.error(err);
+    //                   alert(err.message);
+    //                 }
+
+    //             });
+    //         }
+    //     );
+    // };
 
    React.useEffect(()=>{
     setLoading(true)
