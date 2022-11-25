@@ -10,13 +10,21 @@ import { signInWithPopup, createUserWithEmailAndPassword , signInWithEmailAndPas
   inMemoryPersistence } from 'firebase/auth';
 import { User } from "./../../App"
 import TwitterIcon from '@mui/icons-material/Twitter';
-// import { toast } from 'react-toastify';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useHistory,
+} from "react-router-dom";
 
 export default function Auth() {
     const [ products ,setProducts] = React.useState([]);
-	const [ signIn ,setSignIn] = React.useState(true);
+    const [ signIn ,setSignIn] = React.useState(true);
+	const [ error ,setError] = React.useState("");
     const { user ,setUser} = React.useContext(User);
 
+    const history = useHistory()
 	const [ userLogin ,setUserLogin] = React.useState({
         email:"",
         password:""
@@ -41,31 +49,8 @@ export default function Auth() {
       [event.target.name]: event.target.value,
     })
     }
+    console.log(userSignUp)
 
-
-  // React.useEffect(() => {
-  //   initLists()
-  // }, [user.email , user.uid]);
-
-const initLists = async () => {
-    if (user.email !== "") {
-      let userLists = {};
-      const querySnapshot = await getDocs(collection(db, "users"));
-
-      querySnapshot.forEach((item) => {
-        if (item.data().email === user.email) {
-          userLists = { ...item.data()};
-        }
-      });
-
-      setUser({...user , userLists});
-    //   toast.success('Got user lists !', {
-    //     position: toast.POSITION.TOP_RIGHT
-    // });
-    } else {
-      // alert("User not logged in.");
-    }
-  };
     const UpdateUser = async (user) => {
          // await setDoc(doc(db, "users" , user.email), {
          //                        uid : user.uid,
@@ -138,7 +123,7 @@ const initLists = async () => {
     };
 
     const createUser = () => {
-        createUserWithEmailAndPassword(auth, userLogin.email, userLogin.password)
+        createUserWithEmailAndPassword(auth, userSignUp.email, userSignUp.password)
           .then((userCredential) => {
              const resultsUser = userCredential.user;
                 // auth.onAuthStateChanged((user)=> console.log("changed user here : " , user))
@@ -176,14 +161,17 @@ const initLists = async () => {
           .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
+            setError(errorMessage)
             // ..
           });
     }
 
     React.useEffect(()=>{
-        const localStorageUser = localStorage.getItem('authUser') ? JSON.parse(localStorage.getItem('authUser')) : { ... user };
-        setUser(localStorageUser)
-    })
+        if(user.uid !== "" && user.email !== ""){
+            history.push("/all-images")
+        }
+    },[])
+
 
 
   return (
@@ -195,14 +183,15 @@ const initLists = async () => {
     		},
     		marginTop:'2.rem',
     		position:'fixed',
-            height:'100vh',
+            margin:'auto 0',
+            background:'rgba(200,200,200,.3)',
+            minHeight:'80vh',
     		display:'flex',
     		flexDirection:'column',
     		justifyContent:'center',
     		zIndex:'9',
     		// borderBottom:'1px solid red'
     		 }}>
-
     		 <Box  sx={{ display:'flex',
     		flexDirection:'column',
     		justifyContent:'center',
@@ -214,7 +203,7 @@ const initLists = async () => {
     		    <Box sx={{ 	
     		width: {
                 xs:"80%",
-                lg:'60%'} , 
+                lg:'50%'} , 
     		padding:{
     			// xs:'0.5rem',
     			xs:'3.5rem 1.5rem',
@@ -223,7 +212,6 @@ const initLists = async () => {
             overflowY:{xs:'auto' , lg:"hidden"},
             // height:'80vh',
             minHeight:'50vh',
-    		maxHeight:'80vh',
     		display:'flex',
     		flexDirection:'column',
     		justifyContent:'center',
@@ -232,8 +220,10 @@ const initLists = async () => {
     		// background:'#222',
     		// borderBottom:'1px solid red'
     		 }}>
+             <Typography fontWeight={"600"} fontSize={"38px"} textAlign={"center"}> Please Login or Sign Up to View Your Gallery
+             </Typography>
     		 <Grid container>
-    		 	<Grid item xs={12} lg={6} sx={{  background:'' , padding:'12px 21px' }}>
+    		 	<Grid item xs={12} sx={{  background:'' , padding:'12px 21px' }}>
     		{
                     signIn ? (
                             <form onSubmit={handleSignIn}>
@@ -246,23 +236,26 @@ const initLists = async () => {
                         ) : (
                             <form onSubmit={createUser}>
 
-            <TextField value={userSignUp.email} sx={{ width:'100%' , margin:'12px 0' }} onChange={handleSignUpChange}  type="text" label="Display Name" name="displayName" />
+            <TextField value={userSignUp.displayName} sx={{ width:'100%' , margin:'12px 0' }} onChange={handleSignUpChange}  type="text" label="Display Name" name="displayName" />
             <TextField value={userSignUp.email} sx={{ width:'100%' , margin:'12px 0' }} onChange={handleSignUpChange}  type="email" label="Email" name="email" />
             <TextField value={userSignUp.password} sx={{ width:'100%' , margin:'12px 0' }} onChange={handleSignUpChange}  type="password" label="Password" name="password" />
-                <Button onClick={createUser} sx={{ width:'100%' , padding:'21px 21px' , background:"red" ,"&:hover":{ color:"red" }, margin:'12px 0' , color:'#eee' , fontWeight:'600' }}>Sign In</Button>
+                <Button onClick={createUser} sx={{ width:'100%' , padding:'21px 21px' , background:"red" ,"&:hover":{ color:"red" }, margin:'12px 0' , color:'#eee' , fontWeight:'600' }}>Sign Up</Button>
 
                             </form>
                         )
                 }
 
+                {
+                    error !== "" && <Typography fontSize={"32px"} textAlign={"center"} >{error}</Typography>
+                }
 
     		
             <Typography sx={{margin:"21px 0" , fontSize:'18px' , textAlign:'center' , color:"red" , padding:'0 0' ,margin:'12px 0' }}>{signIn ? "Don't have an account ?" : "Already have an account ?"}</Typography>
-                        <Typography  onClick={()=> setSignIn(!signIn)} sx={{fontWeight:'600', "&:hover":{ textDecoration:'underline' } , fontSize:'16px' ,color:"#4267B2" }} > Click Here To Sign { signIn ? "Up" : "In"} </Typography> 
+                        <Typography  onClick={()=> setSignIn(!signIn)} sx={{fontWeight:'600',textAlign:'center', cursor:"pointer", "&:hover":{ textDecoration:'underline' } , fontSize:'16px' ,color:"#4267B2" }} > Click Here To Sign { signIn ? "Up" : "In"} </Typography> 
                
                
     		 	</Grid>
-    		 	<Grid item xs={12} lg={6} sx={{ minHeight:"" , background:'' , padding:'12px 21px' , display:'flex' , justifyContent:'' , alignItems:'' , flexDirection:'column' }}>
+    		 	<Grid item xs={12} sx={{ minHeight:"" , background:'' , padding:'12px 21px' , display:'flex' , justifyContent:'' , alignItems:'' , flexDirection:'column' }}>
              <Box sx={{ padding:" 0" }}>
 
      <Button onClick={googleHandler} sx={{ width:'100%' , padding:'14px 21px' , background:'#F4B400' ,"&:hover":{ color:'#F4B400' }, margin:'12px 0' , color:'#eee' , fontWeight:'600' , display:'flex', }}><img style={{height:'34px', margin:'0 12px' , objectFit:'contain'}} src="https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png" alt=""/>Continue with Google</Button>

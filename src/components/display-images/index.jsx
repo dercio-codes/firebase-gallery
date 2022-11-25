@@ -16,11 +16,19 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import ShareIcon from '@mui/icons-material/Share';
 import * as React from 'react';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useHistory,
+} from "react-router-dom";
 
 function DisplayImages() {
     const { user ,setUser} = React.useContext(User);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
+    const history = useHistory()
     const [selectedFolder, setSelectedFolder] = useState("");
     let folderImages = []
 
@@ -30,7 +38,7 @@ function DisplayImages() {
     	}
     });
 
-	const getProducts = async () => {
+	const getContent = async () => {
 		const local = []
 		const querySnapshot = await getDocs(collection(db, "images"));
 
@@ -58,7 +66,7 @@ function DisplayImages() {
         });
 
         console.log("Done updating")
-        getProducts()
+        getContent()
       }
     });
     setLoading(false)
@@ -77,134 +85,75 @@ setLoading(true)
         });
 
         console.log("Done updating")
-        getProducts()
+        getContent()
       }
     });
 	}
 
 	React.useEffect(()=>{
-		getProducts()
-	},[user])
+		getContent()
+	},[user.uid])
+
+  React.useEffect(()=>{
+    if(user.uid === ""){
+      history.push("/")
+    }
+  },[]);
+
+  const openImage = (item) => {
+    history.push(`/folder:${item.toLowerCase()}`)
+  }
+
+  const folders = [
+  {
+    title:"All",
+    image:'https://images.pexels.com/photos/4066761/pexels-photo-4066761.jpeg?auto=compress&cs=tinysrgb&w=1600'
+  } ,
+  {
+    title:"Favourites",
+    image:'https://media.istockphoto.com/id/1403773415/photo/hand-changing-with-smile-emoticon-icons-face-on-wooden-cube-costumer-service-concept.jpg?b=1&s=612x612&w=0&k=20&c=S-YE-chHzM-a3v6Ky2XeKBRERkBBg-faZXzXJOv5s0Y='
+  } ,
+  {
+    title:"Camera",
+    image:'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&cs=tinysrgb&w=1600'
+  } ,
+  {
+    title:"Cloud",
+    image:'https://images.pexels.com/photos/531756/pexels-photo-531756.jpeg?auto=compress&cs=tinysrgb&w=1600'
+  } ,
+  {
+    title:"Drip",
+    image:'https://images.pexels.com/photos/1212407/pexels-photo-1212407.jpeg?auto=compress&cs=tinysrgb&w=1600'
+  } ,
+    {
+    title:"Nature",
+    image:'https://images.pexels.com/photos/11380322/pexels-photo-11380322.jpeg?auto=compress&cs=tinysrgb&w=1600'
+  } ,
+  ]
 
 
     
     return (
         <Box sx={{ padding:'2.5rem' , color:'#eee' }}>
-		
-		<TextField label="Select Folder" select fullWidth >
-        							<MenuItem onClick={() => setSelectedFolder("")} value=""><Typography>{"Yeahh"}</Typography></MenuItem>
-        							<MenuItem onClick={() => setSelectedFolder("Favourites")} value="Favourites">Favourites</MenuItem>
-        							<MenuItem onClick={() => setSelectedFolder("Hidden")} value="Hidden">Hidden</MenuItem>
-        							<MenuItem onClick={() => setSelectedFolder("Camera")} value="Camera">Camera</MenuItem>
-        							<MenuItem onClick={() => setSelectedFolder("Cloud")} value="Cloud">Cloud</MenuItem>
-        							<MenuItem onClick={() => setSelectedFolder("Drip")} value="Drip">Drip</MenuItem>
-        </TextField>
       {
         loading ? (
           <Box sx={{ height:'50vh' , background:'' , display:'flex' , justifyContent:'center' , alignItems
-          :'center' }}>
+          :'center' , margin:'21px 0' }}>
           <CircularProgress size={"12.5rem"} sx={{ margin:"25vh auto" }} />
           </Box>
           ) : (
-    <Grid container spacing={3}>
-        
-  {/*          {
-              images.map((item)=>{
-                if(selectedFolder !== "" && selectedFolder === item.folder){
-
+          <Grid container spacing={0}>
+            {
+              folders.map((item)=>{
                 return(
-                  <Grid item key={item.imageSource} xs={3} sx={{ margin:'12px 0' }}>
-                    <Box sx={{ height:'250px' , width:'100%' , backgroundImage:`url(${item.imageSource})` , backgroundSize:"cover" , backgroundPosition:'center' , backgroundRepeat:'no-repeat'}}  />
-                  <Box sx={{ width:'100%' , display:'flex' , background:'', minHeight:'50px' , marginTop:'12px'  }}>
-                    <Box onClick={()=> deleteItem(item)} sx={{ flex:1 , background:'' }}>
-
-                    </Box>
-                    <Box sx={{ flex:1 , background:'pink' }}>
-                      <TextField label="Move To?" select fullWidth >
-                      <MenuItem onClick={() => addToFolder(item , "Favourites")} value="Favourites">Favourites</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Hidden")} value="Hidden">Hidden</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Camera")} value="Camera">Camera</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Cloud")} value="Cloud">Cloud</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Drip")} value="Drip">Drip</MenuItem>
-                      </TextField>
-                    </Box>
-                  </Box>
-                </Grid>
-                  )
-                }
-              })
-            }*/}
-            {
-              selectedFolder === "" && images.map((item)=>{
-                    return(
-
-                                  <Grid item key={item.imageSource} xs={3} sx={{ margin:'12px 0' }}>
-                    <Box sx={{ height:'250px' , width:'100%' , backgroundImage:`url(${item.imageSource})` , backgroundSize:"cover" , backgroundPosition:'center' , backgroundRepeat:'no-repeat'}}  />
-                  <Box sx={{ width:'100%' , display:'flex' , background:'', minHeight:'50px' , marginTop:'12px'  }}>
-                    <Box onClick={()=> deleteItem(item)} sx={{ flex:1 , background:'' , display:'flex' , alignItems:'center' , justifyContent:'center' }}>
-<DeleteForeverIcon sx={{ color:'#111' , fontSize:'24px' , margin:'12px auto' }} />
-                    </Box>
-                    <Box sx={{ flex:1 , background:'' }}>
-                      <TextField label="Move To?" select fullWidth >
-                      <MenuItem onClick={() => addToFolder(item , "Favourites")} value="Favourites">Favourites</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Hidden")} value="Hidden">Hidden</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Camera")} value="Camera">Camera</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Cloud")} value="Cloud">Cloud</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Drip")} value="Drip">Drip</MenuItem>
-                      </TextField>
-                    </Box>
-                                       <Box sx={{ flex:1 , background:'' , display:'flex' , alignItems:'center' , justifyContent:'center' }}>
-                      <ShareIcon sx={{ cursor:"pointer", color:'#111' , fontSize:'24px' , margin:'12px auto' }}/>
-                    </Box>
-                  </Box>
-                </Grid>
-            )})
-            }
-            {
-              folderImages.length === 0 ? (
-                  <Grid item xs={12} sx={{ height:'50vh' }}>
-
-          <Box sx={{ height:'50vh' , color:"#111", background:'' , display:'flex' , justifyContent:'center' , flexDirection:'column' , alignItems
-          :'center' }}>
-          <img src="https://cdn-icons-png.flaticon.com/512/3875/3875172.png" style={{ width:'100%' , height:'200px' , objectFit:'contain' }} alt="" />
-          <Typography sx={{ fontSize:'54px', fontWeight:600 }}>
-            Nothing under the folder {selectedFolder}
-            </Typography>
-            <Typography sx={{ fontSize:'32px', fontWeight:600 }}>
-            Upload your first image here 
-            </Typography>
-                    </Box>
-                  </Grid>
+                  <Grid key={item.title} item xs={2.4} sx={{ cursor: "pointer" , border:'5px solid white' , height:'250px' , backgroundImage:`url("${item.image}")` , backgroundSize:'cover' , opacity:"0.9", "&:hover":{opacity:"1"} , display:'flex' , alignItems:'center' , justifyContent:'center' }}> 
                   
-                ) : (
-                  selectedFolder !== "" && folderImages.map((item)=>{
-                    if(item.folder !== "Hidden"){
-                      return(
-
-                                  <Grid item key={item.imageSource} xs={3} sx={{ margin:'12px 0' }}>
-                    <Box sx={{ height:'250px' , width:'100%' , backgroundImage:`url(${item.imageSource})` , backgroundSize:"cover" , backgroundPosition:'center' , backgroundRepeat:'no-repeat'}}  />
-                  <Box sx={{ width:'100%' , display:'flex' , background:'', minHeight:'50px' , marginTop:'12px'  }}>
-                    <Box onClick={()=> deleteItem(item)} sx={{ flex:1 , background:'' , display:'flex' , alignItems:'center' , justifyContent:'center' }}>
-<DeleteForeverIcon sx={{ color:'#111' , fontSize:'24px' , margin:'12px auto' }} />
-                    </Box>
-                    <Box sx={{ flex:1 , background:'' }}>
-                      <TextField label={"Move To?"} select fullWidth >
-                      <MenuItem onClick={() => addToFolder(item , "Favourites")} value="Favourites">Favourites</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Hidden")} value="Hidden">Hidden</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Camera")} value="Camera">Camera</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Cloud")} value="Cloud">Cloud</MenuItem>
-                      <MenuItem onClick={() => addToFolder(item , "Drip")} value="Drip">Drip</MenuItem>
-                      </TextField>
-                    </Box>
-                  </Box>
-                </Grid>)
-                    }
-                  })
-
+                  <Typography onClick={ ()=> openImage(item.title) } sx={{ width:'100%' , height:'100%' , fontSize:'32px' , fontWeight:600 , display:'flex' , alignItems:'center' , justifyContent:'center' , background:"rgba(1,1,1,.3)"  , "&:hover":{background:"rgba(1,1,1,.9)"} }} >{item.title}</Typography> 
+                  </Grid>
                 )
+              })
             }
-        </Grid>
-
+          </Grid>
           )
       }
 

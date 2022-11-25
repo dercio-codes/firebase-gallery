@@ -10,6 +10,7 @@ import { User } from "./../../App"
 
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import { useHistory } from 'react-router-dom';
 
 import * as React from 'react';
 
@@ -17,6 +18,7 @@ function Upload() {
     const { user ,setUser} = React.useContext(User);
 
     // State to store uploaded file
+    const history = useHistory()
     const [file, setFile] = useState("");
     const [newImage, SetNewImage] = useState("");
     const [newImageItem, SetNewImageItem] = useState({
@@ -84,7 +86,7 @@ function Upload() {
                                 ...newImageItem,
                                 imageSource:url,
                         });
-                       	setUser(user)
+                       	history.push("/all-images")
                     } catch (err) {
                       console.error(err);
                       alert(err.message);
@@ -93,21 +95,42 @@ function Upload() {
                 });
             }
         );
-    // }else{
-    //     alert("Please login with the Admin Account to make such changes.")
-    // }
-
-
     };
+
+   React.useEffect(()=>{
+    setLoading(true)
+    if(user.uid === ""){
+      history.push("/")
+    }
+    setLoading(false)
+  },[]);
 
     
     return (
         <Box sx={{ padding:'2.5rem' , color:'#eee' }}>
-        <Box sx={{ width:`${percent}%` , background:'red' , height:'16px' , position:'fixed' , top:0 , left:'0' }} />
-            <input type="file" onChange={handleFileChange} accept="/image/*" />
-            <button onClick={handleFileUpload}>Upload Image</button>
+        {
+        loading ? (
+          <Box sx={{ height:'50vh' , background:'' , display:'flex' , justifyContent:'center' , alignItems
+          :'center' , margin:'21px 0' }}>
+          <CircularProgress size={"12.5rem"} sx={{ margin:"25vh auto" }} />
+          </Box>
+          ) : (
+          <>
+        <Box sx={{ width:`${percent}%` , background:'rgba(1,1,1,.7)' , height:'8px' , position:'fixed' , top:0 , left:'0' }} />
+            <Grid container>
+            <Grid item xs={12} lg={6}>
+            <input className="custom-file-input" placeholder="Select Image Here" style={{ height:'80vh' , width:'100%' , background:'rgba(1,1,1,.3)' }} type="file" onChange={handleFileChange} accept="/image/*" />
+            <Button sx={{ width:'100%' , padding:'21px' , background:'rgba(1,1,1,.9)' }} onClick={handleFileUpload}>Upload Image</Button>
             <p>{percent} "% done"</p>
-
+            </Grid>
+                        <Grid item xs={12} lg={6}>
+                        <img src={preview} alt="" style={{ width:"100%" , objectFit:'contain' }} />
+            
+            </Grid>
+            </Grid>
+            </>
+            )
+      }
         </Box>
     );
 }
